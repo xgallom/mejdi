@@ -66,3 +66,11 @@ int RodneCislo::rokNarodenia() const
 
 	return value < 15 ? value + 2000 : value + 1900;
 }
+
+std::ostream &operator<<(std::ostream &os, const RodneCislo &r)
+{
+	return os
+			<< "Rodne cislo: " << r.rodneCislo() << "\n"
+			<< "Pohlavie: " << (r.pohlavie() ? "Muz" : "Zena") << "\n"
+			<< "Datum narodenia: " << r.denNarodenia() << "." << r.mesiacNarodenia() << "." << r.rokNarodenia() << "\n";
+}

@@ -5,6 +5,8 @@
 #ifndef MEJDI_RODNE_CISLO__RODNECISLO_H
 #define MEJDI_RODNE_CISLO__RODNECISLO_H
 
+#include <iostream>
+
 static const bool Zena = false, Muz = true;
 static const int RodneCisloLength = 12;
 
@@ -24,5 +26,7 @@ public:
 private:
 	char m_rodneCislo[RodneCisloLength];
 };
+
+std::ostream& operator<<(std::ostream &os, const RodneCislo &r);
 
 #endif //MEJDI_RODNE_CISLO__RODNECISLO_H
