@@ -1,16 +1,14 @@
 #include <iostream>
 #include <fstream>
 
-static const int MaxNameLength = 20, MaxStudentsCount = 100;
-
-struct Date {
-	int day, month, year;
-};
+static const int MaxNameLength = 64, MaxStudentsCount = 100, BirthDateLength = 7;
 
 struct Student {
 	char firstName[MaxNameLength], lastName[MaxNameLength];
-	char grade;
-	Date birthDate;
+	char birthDate[BirthDateLength];
+	int points;
+	char address[MaxNameLength];
+	int distance;
 };
 
 int search(const Student *students, int length,
@@ -50,71 +48,83 @@ float averageGrade(const Student *students, int count)
 	return sum / count;
 }
 
-int read(Student *students, std::fstream &file)
+int read(Student **students, std::fstream &file)
 {
 	int count = 0;
 
 	while(!file.eof()) {
-		Student &student = students[count++];
+		Student *student = students[count++] = new Student;
 
 		file
-				>> student.firstName >> student.lastName >> student.grade
-				>> student.birthDate.day >> student.birthDate.month
-				>> student.birthDate.year;
+				>> student->firstName >> student->lastName
+				>> student->birthDate >> student->points
+				>> student->address >> student->distance;
 	}
 
 	return count;
 }
 
-void print(const Student &student)
+void clean(Student **students, int count)
+{
+	for(int n = 0; n < count; ++n)
+		delete students[n];
+}
+
+int isWoman(Student *student)
+{
+	return student->birthDate[2] - '0' >= 5;
+}
+
+void print(Student *student)
 {
 	std::cout
-			<< student.firstName << " " << student.lastName
-			<< ", nar. " << student.birthDate.day << "." << student.birthDate.month << "."
-			<< student.birthDate.year << ", znamka " << student.grade << "\n";
+			<< student->firstName << " " << student->lastName
+			<< ", nar. " << student->birthDate << ", bodov " << student->points << ", v "
+			<< student->address << ", vo vzdial. " << student->distance << " je " <<
+			(isWoman(student) ? "zena" : "muz") << "\n";
 }
 
-void printAboveAverage(const Student *students, int count)
-{
-	const float average = averageGrade(students, count);
-
-	std::cout << "Zoznam studentov s nadpriemernou znamkou:\n";
-
-	for(int n = 0; n < count; ++n) {
-		if(students[n].grade - 'A' + 1 < average)
-			print(students[n]);
-	}
-
-	std::cout << "\n";
-}
-
-void searchAndPrint(const Student *students, int count,
-					bool (&searchFunction)(const Student &, const char *))
-{
-	char input[MaxNameLength];
-
-	std::cin >> input;
-	int n = search(students, count, searchFunction, input);
-
-	if(n == -1)
-		std::cout << "Student sa nenasiel\n";
-	else {
-		std::cout << "Student sa nasiel: " << n << " - ";
-		print(students[n]);
-	}
-
-	std::cout << "\n";
-}
-
-void printStudentsWithGrade(const Student *students, int count, const char *grade)
-{
-	for(int n = 0; n < count; ++n) {
-		if(searchGrade(students[n], grade))
-			print(students[n]);
-	}
-
-	std::cout << "\n";
-}
+//void printAboveAverage(const Student *students, int count)
+//{
+//	const float average = averageGrade(students, count);
+//
+//	std::cout << "Zoznam studentov s nadpriemernou znamkou:\n";
+//
+//	for(int n = 0; n < count; ++n) {
+//		if(students[n].grade - 'A' + 1 < average)
+//			print(students[n]);
+//	}
+//
+//	std::cout << "\n";
+//}
+//
+//void searchAndPrint(const Student *students, int count,
+//					bool (&searchFunction)(const Student &, const char *))
+//{
+//	char input[MaxNameLength];
+//
+//	std::cin >> input;
+//	int n = search(students, count, searchFunction, input);
+//
+//	if(n == -1)
+//		std::cout << "Student sa nenasiel\n";
+//	else {
+//		std::cout << "Student sa nasiel: " << n << " - ";
+//		print(students[n]);
+//	}
+//
+//	std::cout << "\n";
+//}
+//
+//void printStudentsWithGrade(const Student *students, int count, const char *grade)
+//{
+//	for(int n = 0; n < count; ++n) {
+//		if(searchGrade(students[n], grade))
+//			print(students[n]);
+//	}
+//
+//	std::cout << "\n";
+//}
 
 int main()
 {
@@ -125,22 +135,29 @@ int main()
 		return 1;
 	}
 
-	Student students[MaxStudentsCount];
+	Student *students[MaxStudentsCount];
 
 	const int count = read(students, file);
 
-	printAboveAverage(students, count);
+	for(int n = 0; n < count; ++n) {
+		std::cout << "Student " << n << ": ";
+		print(students[n]);
+	}
 
-	char input[MaxNameLength];
-	std::cout << "Zoznam studentov so znamkou: ";
-	std::cin >> input;
-	printStudentsWithGrade(students, count, input);
+//	printAboveAverage(students, count);
+//
+//	char input[MaxNameLength];
+//	std::cout << "Zoznam studentov so znamkou: ";
+//	std::cin >> input;
+//	printStudentsWithGrade(students, count, input);
+//
+//	std::cout << "Hladana znamka: ";
+//	searchAndPrint(students, count, searchGrade);
+//
+//	std::cout << "Hladane krstne meno: ";
+//	searchAndPrint(students, count, searchFirstName);
 
-	std::cout << "Hladana znamka: ";
-	searchAndPrint(students, count, searchGrade);
-
-	std::cout << "Hladane krstne meno: ";
-	searchAndPrint(students, count, searchFirstName);
+	clean(students, count);
 
 	return 0;
 }
